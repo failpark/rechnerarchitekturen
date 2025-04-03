@@ -15,7 +15,7 @@ fi
 filename=$(basename "$1" .asm)
 
 # -g generate debug info
-nasm -f elf -g "$filename.asm" -o "bin/$filename.o"
+nasm -f elf -g "$1" -o "bin/$filename.o"
 
 # -e entrypoint is by default _start sooooooo set it here or in our asm file
 x86_64-elf-ld -m elf_i386 -e main -o "bin/$filename" "bin/$filename.o"
