@@ -29,5 +29,15 @@ main:
 	int 0x80
 
 segment .data
-msg		db 'Hello, world!', 0xa
+	; https://stackoverflow.com/questions/17387492/what-does-the-assembly-instruction-db-actually-do
+	; db includes the following into the binary directly
+msg		db 'Hello, world!', 0xa ; 0xa is linefeed symbol (see ASCII Table 10(dec) or A (hex) (0x stands for hex)
+	; vgl so blog but this is too good not to summarize here:
+	; since db stores the start of the bytes for our string literal
+	; and $ means "here" (current assembly position)
+	; for more info on $ look here: https://www.nasm.us/doc/nasmdoc3.html#section-3.5
+	; we calc current - start of string and the result is the length of the string
+	; this is valid since db puts each char of the string into a byte
 len		equ		$ - msg
+	; equ places value to symbol (here result of diff to len)
+	; https://www.ibm.com/docs/en/zos/2.1.0?topic=statements-equ-instruction
