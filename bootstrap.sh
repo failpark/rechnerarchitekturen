@@ -11,6 +11,11 @@ if [ ! -f "$1" ]; then
 	exit 1;
 fi
 
+# Compile printf.asm if not already compiled
+if [ ! -f "bin/printf.o" ]; then
+	nasm -f elf -g "printf.asm" -o "bin/printf.o"
+fi
+
 # strip .asm extension
 filename=$(basename "$1" .asm)
 
@@ -18,7 +23,7 @@ filename=$(basename "$1" .asm)
 nasm -f elf -g "$1" -o "bin/$filename.o"
 
 # -e entrypoint is by default _start sooooooo set it here or in our asm file
-x86_64-elf-ld -m elf_i386 -e main -o "bin/$filename" "bin/$filename.o"
+x86_64-elf-ld -m elf_i386 -e main -o "bin/$filename" "bin/$filename.o" "bin/printf.o"
 
 # build and start container
 podman build --build-arg BIN_NAME="$filename" --quiet --tag "$filename" --file Dockerfile
