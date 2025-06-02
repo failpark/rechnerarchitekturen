@@ -1,107 +1,90 @@
-global main                             ; must be declared for linker (ld)
-extern printf                           ; Funktionsaufruf aus C library
+section .data
+	name dd 'Pete' ; declare DWORD (double - 32 unsigned word)
+	byte_nr_1 db '0000'
+	byte_nr_2 db '0000'
+	byte_nr_3 db '0000'
+	byte_nr_4 db '0000'
+
+	fmt db 10,'Der Byte-Wert in der Speicherzelle = %c', 10, 10, 0 ; ugh ._. 10 => \n in ASCII so '\nDer Byte...\n\n' with null-terminated
 
 section .text
-main:                                   ;tell linker entry point
+global main
+extern printf
 
-    ; Load effective address: Adress Berechnung des nächsten Char im String name
-    ; Berechnung von ByteNr1 (Pointer auf das erste Byte von name)
-    mov eax, name                       ; Adresse von name wird in eax geschrieben.
-    lea edx, [eax]                      ; neue effektive Adresse wird berechnet und in edx geschrieben.
-                                        ; vorsicht: bei lea bedeutet [] keine Dereferenzierung!
-                                        ; bei lea bedeutet [] schlichtweg die Berechnung: z.B. [eax+1]...
-                                        ; edx enthält danach den exakt gleichen Wert wie eax: die Adresse der Speicherzelle: Beginn von name
-    mov dword[ByteNr1], edx             ; ByteNr1 zeigt auf das erste Byte im Speicher von [name]
-    
-    ; Berechnung von ByteNr2 (Pointer auf das zweite Byte von name)
-    ; eax enthält im Moment die Adresse des ersten Byte von name
-    inc eax                             ; eax wird um 1 erhöht: das ist Adresse des nächsten byte im String name
-    lea edx, [eax]                      ; neue effektive Adresse wird berechnet und in edx geschrieben.
-    mov dword[ByteNr2], edx             ; ByteNr2 zeigt auf das zweite Byte im Speicher von [name]
-    
-    ; Berechnung von ByteNr3 (Pointer auf das dritte Byte von name)
-    inc eax                             ; eax wird um 1 erhöht: das ist Adresse des nächsten byte im String name
-    lea edx, [eax]                      ; neue effektive Adresse wird berechnet und in edx geschrieben.
-    mov dword[ByteNr3], edx             ; ByteNr3 zeigt auf das dritte Byte im Speicher von [name]
+main:
+	mov eax, name ; eax => address of name
+	lea edx, [eax] ; load effective address (see lea https://www.cs.virginia.edu/~evans/cs216/guides/x86.html)
+	mov dword[byte_nr_1], edx ; store whats stored in edx in byte_nr_1 and treat it as a dword 32 bit (4 byte) operation
 
-    ; Berechnung von ByteNr4 (Pointer auf das vierte Byte von name)
-    inc eax                             ; eax wird um 1 erhöht: das ist Adresse des nächsten byte im String name
-    lea edx, [eax]                      ; neue effektive Adresse wird berechnet und in edx geschrieben.
-    mov dword[ByteNr4], edx             ; ByteNr4 zeigt auf das vierte Byte im Speicher von [name]
+	inc eax ; since eax was pointing at the first byte we now want the second byte
+	lea edx, [eax]
+	mov dword[byte_nr_2], edx
 
+	inc eax
+	lea edx, [eax]
+	mov dword[byte_nr_3], edx
 
+	inc eax
+	lea edx, [eax]
+	mov dword[byte_nr_4], edx
 
-    mov edx, 1                   ;message length
-    mov ecx, [ByteNr1]           ;address of the message to write (name is pointer)
-    mov ebx, 1                   ;file descriptor (stdout)
-    mov eax,4                    ;system call number (sys_write)
-    int 0x80                     ;call kernel
+	; the following just prints each char of Pete seperatly ...
+	mov eax, 4 ; write
+	mov ebx, 1 ; stdout
+	mov ecx, [byte_nr_1] ; dereference / load whats at address byte_nr_1
+	mov edx, 1 ; length
+	int 0x80
 
-    mov edx, 1                   ;message length
-    mov ecx, [ByteNr2]           ;address of the message to write (name is pointer)
-    mov ebx, 1                   ;file descriptor (stdout)
-    mov eax,4                    ;system call number (sys_write)
-    int 0x80                     ;call kernel
- 
-    mov edx, 1                   ;message length
-    mov ecx, [ByteNr3]           ;address of the message to write (name is pointer)
-    mov ebx, 1                   ;file descriptor (stdout)
-    mov eax,4                    ;system call number (sys_write)
-    int 0x80                     ;call kernel
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, [byte_nr_2]
+	mov edx, 1
+	int 0x80
 
-    mov edx, 1                   ;message length
-    mov ecx, [ByteNr4]           ;address of the message to write (name is pointer)
-    mov ebx, 1                   ;file descriptor (stdout)
-    mov eax,4                    ;system call number (sys_write)
-    int 0x80                     ;call kernel
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, [byte_nr_3]
+	mov edx, 1
+	int 0x80
 
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, [byte_nr_4]
+	mov edx, 1
+	int 0x80
 
-    ;write the first byte of the [name]
-    mov eax, [ByteNr1]          ; der Inhalt von der Speicherzelle auf die ByteNR1 zeigt wird in eax geschrieben
-                                ; jetzt steht die Adresse vom ersten Byte von name in eax  
-    push dword[eax]             ; Der Inhalt der Speicherzelle auf die EAX zeigt, wird als ein dword auf den Stack gelegt.
-    push formatString           ; Pushes the string address onto the stack
-    call printf                 ; Calls the _printf function from the C library
-    add esp, 8                  ; Cleans up the stack after the call to _printf
-                                ; Adjusts the stack pointer by 8 bytes to clean up the pushed arguments
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, name
+	mov edx, 4
+	int 80h
 
-    ;write the second byte of the [name]
-    mov eax, [ByteNr2]          ; der Inhalt von der Speicherzelle auf die ByteNR1 zeigt wird in eax geschrieben
-                                ; jetzt steht die Adresse vom ersten Byte von name in eax  
-    push dword[eax]             ; Der Inhalt der Speicherzelle auf die EAX zeigt, wird als ein dword auf den Stack gelegt.
-    push formatString           ; Pushes the string address onto the stack
-    call printf                 ; Calls the _printf function from the C library
-    add esp, 8                  ; Cleans up the stack after the call to _printf
-                                ; Adjusts the stack pointer by 8 bytes to clean up the pushed arguments
+	mov eax, [byte_nr_1]
+	push dword[eax] ; put address on the stack
+	push fmt
+	call printf
+	; see push https://www.cs.virginia.edu/~evans/cs216/guides/x86.html
+	; push decrements esp (extended stack pointer) by 4
+	add esp, 8
 
-    ;write the first byte of the [name]
-    mov eax, [ByteNr3]          ; der Inhalt von der Speicherzelle auf die ByteNR1 zeigt wird in eax geschrieben
-                                ; jetzt steht die Adresse vom ersten Byte von name in eax  
-    push dword[eax]             ; Der Inhalt der Speicherzelle auf die EAX zeigt, wird als ein dword auf den Stack gelegt.
-    push formatString           ; Pushes the string address onto the stack
-    call printf                 ; Calls the _printf function from the C library
-    add esp, 8                  ; Cleans up the stack after the call to _printf
-                                ; Adjusts the stack pointer by 8 bytes to clean up the pushed arguments
+	mov eax, [byte_nr_2]
+	push dword[eax]
+	push fmt
+	call printf
+	add esp, 8
 
-    ;write the first byte of the [name]
-    mov eax, [ByteNr4]          ; der Inhalt von der Speicherzelle auf die ByteNR1 zeigt wird in eax geschrieben
-                                ; jetzt steht die Adresse vom ersten Byte von name in eax  
-    push dword[eax]             ; Der Inhalt der Speicherzelle auf die EAX zeigt, wird als ein dword auf den Stack gelegt.
-    push formatString           ; Pushes the string address onto the stack
-    call printf                 ; Calls the _printf function from the C library
-    add esp, 8                  ; Cleans up the stack after the call to _printf
-                                ; Adjusts the stack pointer by 8 bytes to clean up the pushed arguments
+	mov eax, [byte_nr_3]
+	push dword[eax]
+	push fmt
+	call printf
+	add esp, 8
 
-    ;Exit code
-     mov eax, 1
-     mov ebx, 0
-     int 80h
+	mov eax, [byte_nr_4]
+	push dword[eax]
+	push fmt
+	call printf
+	add esp, 8
 
-section .data
-    name dd 'Pete'                ; name is a pointer to an allocated doube word (4 byte) in memory with 'Pete'
-    ByteNr1 db '0000'             ; is a pointer to an allocated 4 byte in memory with '0'
-    ByteNr2 db '0000'             ; is a pointer to an allocated 4 byte in memory with '0'
-    ByteNr3 db '0000'             ; is a pointer to an allocated 4 byte in memory with '0'
-    ByteNr4 db '0000'             ; is a pointer to an allocated 4 byte in memory with '0'
-
-    formatString  db             10,'Der Byte-Wert in Speicherzelle = %c', 10, 10, 0  ; Format string for _printf
+	mov eax, 1
+	mov ebx, 0
+	int 80h
