@@ -1,5 +1,7 @@
 section .data
-	name dd 'Pete' ; declare DWORD (double - 32 unsigned word)
+	; declare DWORD (double - 32 unsigned word)
+	name dd 'Pete'	; Stored as 0x65746550 in little-endian
+					; P=0x50, e=0x65, t=0x74, e=0x65
 	byte_nr_1 db '0000'
 	byte_nr_2 db '0000'
 	byte_nr_3 db '0000'
