@@ -14,3 +14,6 @@ printf:
 
 run path:
 	./bootstrap.sh {{path}}
+	
+test:
+	./test.sh
