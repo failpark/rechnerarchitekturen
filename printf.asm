@@ -20,10 +20,13 @@ printf:
 	jne .print_char
 
 	lodsb
+	; decimal
 	cmp al, 'd'
 	je .print_int
+	; string of chars
 	cmp al, 's'
 	je .print_str
+	; char
 	cmp al, 'c'
 	je .print_char_arg
 
@@ -51,10 +54,10 @@ printf:
 	mov eax, [edi]
 	add edi, 4
 	call itoa
+	mov edx, eax    ; use actual length returned by itoa
 	mov eax, 4
 	mov ebx, 1
 	mov ecx, num_buf
-	mov edx, 11
 	int 0x80
 	jmp .loop
 
@@ -99,7 +102,9 @@ itoa:
 	push esi
 	mov esi, edi
 	mov edi, num_buf
+	push ecx		; save the length
 	rep movsb
+	pop eax			; return length in eax
 	pop esi
 	pop edi
 	ret
