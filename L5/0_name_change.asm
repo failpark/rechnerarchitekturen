@@ -1,7 +1,6 @@
 section .data
 	name db 'Daniel Borgs', 0xa
 	len equ $ - name
-	new db 'Tester'
 
 section .text
 	global main
@@ -16,8 +15,7 @@ main:
 	; word = 16 bits = 2 bytes
 	; doubleword = 32 bits = 4 bytes
 	; quadword = 64 bits = 8 bytes
-	mov eax, dword[new]
-	mov dword[name], eax
+	mov dword[name], dword 'Test' ; change the first 4 bytes
 
 	mov eax, 4
 	mov ebx, 1

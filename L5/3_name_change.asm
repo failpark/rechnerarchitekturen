@@ -1,92 +1,55 @@
 section .data
-	; declare DWORD (double - 32 unsigned word)
-	name dd 'Pete'	; Stored as 0x65746550 in little-endian
-					; P=0x50, e=0x65, t=0x74, e=0x65
-	byte_nr_1 db '0000'
-	byte_nr_2 db '0000'
-	byte_nr_3 db '0000'
-	byte_nr_4 db '0000'
-
-	fmt db 10,'Der Byte-Wert in der Speicherzelle = %c', 10, 10, 0 ; ugh ._. 10 => \n in ASCII so '\nDer Byte...\n\n' with null-terminated
+	name dd 'Pete'
+	name_length equ $ - name
+	nl db 0xa,0
+	fmt db 'Der Byte-Wert in der Speicherzelle = %c', 10, 10, 0 ; ugh ._. 10 => \n in ASCII so '\nDer Byte...\n\n' with null-terminated
 
 section .text
 global main
 extern printf
 
 main:
-	mov eax, name ; eax => address of name
-	lea edx, [eax] ; load effective address (see lea https://www.cs.virginia.edu/~evans/cs216/guides/x86.html)
-	mov dword[byte_nr_1], edx ; store whats stored in edx in byte_nr_1 and treat it as a dword 32 bit (4 byte) operation
+	xor esi, esi ; init loop at 0 --> faster than zeroing esi any other way (most of the time)
+	call char_loop
 
-	inc eax ; since eax was pointing at the first byte we now want the second byte
-	lea edx, [eax]
-	mov dword[byte_nr_2], edx
-
-	inc eax
-	lea edx, [eax]
-	mov dword[byte_nr_3], edx
-
-	inc eax
-	lea edx, [eax]
-	mov dword[byte_nr_4], edx
-
-	; the following just prints each char of Pete seperatly ...
-	mov eax, 4 ; write
-	mov ebx, 1 ; stdout
-	mov ecx, [byte_nr_1] ; dereference / load whats at address byte_nr_1
-	mov edx, 1 ; length
-	int 0x80
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, [byte_nr_2]
-	mov edx, 1
-	int 0x80
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, [byte_nr_3]
-	mov edx, 1
-	int 0x80
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, [byte_nr_4]
-	mov edx, 1
-	int 0x80
-
-	mov eax, 4
-	mov ebx, 1
-	mov ecx, name
-	mov edx, 4
-	int 80h
-
-	mov eax, [byte_nr_1]
-	push dword[eax] ; put address on the stack
-	push fmt
-	call printf
-	; see push https://www.cs.virginia.edu/~evans/cs216/guides/x86.html
-	; push decrements esp (extended stack pointer) by 4
-	add esp, 8
-
-	mov eax, [byte_nr_2]
-	push dword[eax]
-	push fmt
-	call printf
-	add esp, 8
-
-	mov eax, [byte_nr_3]
-	push dword[eax]
-	push fmt
-	call printf
-	add esp, 8
-
-	mov eax, [byte_nr_4]
-	push dword[eax]
-	push fmt
-	call printf
-	add esp, 8
+	xor esi, esi
+	call printf_loop
 
 	mov eax, 1
 	mov ebx, 0
 	int 80h
+
+char_loop:
+	mov ecx, name
+	; works because we increment the pointer
+	add ecx, esi
+	call print_char
+	; write expects an address in ecx and not the val... so writing `mov ecx, 0xa` does not work
+	mov ecx, nl
+	call print_char
+
+	inc esi
+	cmp esi, name_length
+	jl char_loop
+	ret
+
+print_char:
+	mov eax, 4
+	mov ebx, 1
+	mov edx, 1
+	int 80h
+	ret
+
+printf_loop:
+	movzx eax, byte[name + esi]; move zero extend (byte loaded from mem to dword register eax
+	push eax
+	push fmt
+	call printf
+	add esp, 8
+	inc esi
+	; http://unixwiz.net/techtips/x86-jumps.html
+	; https://stackoverflow.com/questions/9617877/assembly-jg-jnle-jl-jnge-after-cmp
+	; https://www.cs.virginia.edu/~evans/cs216/guides/x86.html "Control Flow Instructions"
+	cmp esi, name_length
+	jl printf_loop
+	ret
