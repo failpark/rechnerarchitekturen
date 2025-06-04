@@ -33,22 +33,6 @@ char_loop:
 	jl char_loop
 	ret
 
-print_with_nl_padding:
-	; Get the byte to print
-	movzx eax, byte[ecx]  ; Zero-extend byte to eax
-	push 0x0a00            ; Push newline + padding
-	mov [esp+1], al        ; Overwrite padding with character
-
-	; Print both bytes at once
-	mov ecx, esp
-
-print_with_nl_shift:
-	movzx eax, byte[ecx]  ; Get character
-	shl eax, 8             ; Shift left by 8 bits
-	or eax, 0x0a           ; Add newline
-	push eax               ; Push to stack
-	mov ecx, esp
-
 print_char:
 	mov eax, 4
 	mov ebx, 1
