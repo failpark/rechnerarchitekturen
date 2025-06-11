@@ -2,12 +2,14 @@ section .data
 	s1 db 'password', 0
 	len1 equ $ - s1
 
-	len1pwd dd 0x00000000
+	; we don't need to write 0x00000000
+	len1pwd dd 0
 
 	s2 db 'password', 0
 	len2 equ $ - s2
 	
-	len2pwd dd 0x00000000
+	; we don't need to calc ... we can just use this lol
+	len2pwd dd len2 - 1
 
 	key db 0x00
 	general_info db "Caesar-Chiffre, Key                             = %d", 10, 0
@@ -30,10 +32,6 @@ main:
 	mov eax, len1
 	dec eax
 	mov [len1pwd], eax
-
-	mov eax, len2
-	dec eax
-	mov [len2pwd], eax
 
 	push dword[len1pwd]
 	push len1
