@@ -13,7 +13,10 @@ printf:
 	nasm -f elf -g "printf.asm" -o "bin/printf.o"
 
 run path:
-	./bootstrap.sh {{path}}
-	
+	./bootstrap.sh {{ join(invocation_directory(), path) }}
+
+kill:
+	podman kill $(podman ps --last 1 --format '{{{{.Names}}')
+
 test:
 	./test.sh
