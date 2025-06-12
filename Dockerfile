@@ -1,10 +1,10 @@
-# most minimal image
-# use ubuntu if you need to debug ¯\_(ツ)_/¯
-FROM scratch
-
+FROM scratch AS base
 ARG BIN_NAME
-# Copying the compiled file to the container
 COPY bin/${BIN_NAME} /asm-bin
-
-# exec the bin
 CMD ["/asm-bin"]
+
+# Debug image (for file system excercises etc)
+FROM alpine:latest AS debug
+ARG BIN_NAME
+COPY bin/${BIN_NAME} /asm-bin
+CMD ["/bin/sh", "-c", "/asm-bin && /bin/sh"]

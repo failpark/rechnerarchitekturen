@@ -30,7 +30,6 @@ nasm -f elf -g "$1" -o "bin/$filename.o"
 x86_64-elf-ld -m elf_i386 -o "bin/$filename" "bin/$filename.o" "bin/printf.o" "bin/start.o"
 
 # build and start container
-podman build --build-arg BIN_NAME="$filename" --quiet --tag "$filename" --file Dockerfile
+podman build --build-arg BIN_NAME="$filename" --quiet --tag "$filename" --file Dockerfile --target ${2:-base}
 
-# podman run --rm --quiet -e "BIN_NAME=$filename" "localhost/$filename"
 podman run -it --rm "localhost/$filename"
