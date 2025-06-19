@@ -26,7 +26,7 @@ main:
 	mov [result], eax ; move 40 to the value at result
 
 	; setup & call printf
-	push result
+	push dword[result]
 	push fmt
 	call printf
 	add esp, 8 ; cleanup stack
