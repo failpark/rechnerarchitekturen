@@ -29,6 +29,20 @@ printf:
 	; char
 	cmp al, 'c'
 	je .print_char_arg
+	; hexadecimal (uppercase)
+	cmp al, 'X'
+	je .print_hex
+
+.print_hex:
+	mov eax, [edi]
+	add edi, 4
+	call itoa_hex
+	mov edx, eax    ; use actual length returned by itoa_hex
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, num_buf
+	int 0x80
+	jmp .loop
 
 .print_char:
 	mov [char_buf], al
@@ -96,6 +110,37 @@ itoa:
 	mov [edi], dl
 	test eax, eax
 	jnz .itoa_loop
+
+	mov ecx, num_buf + 10
+	sub ecx, edi
+	push esi
+	mov esi, edi
+	mov edi, num_buf
+	push ecx		; save the length
+	rep movsb
+	pop eax			; return length in eax
+	pop esi
+	pop edi
+	ret
+
+itoa_hex:
+	push edi
+	mov edi, num_buf + 10
+	mov byte [edi], 0
+	mov ecx, 16
+
+.itoa_hex_loop:
+	xor edx, edx
+	div ecx
+	cmp dl, 10
+	jl .hex_digit
+	add dl, 'A' - 10 - '0'  ; Convert 10-15 to A-F
+.hex_digit:
+	add dl, '0'
+	dec edi
+	mov [edi], dl
+	test eax, eax
+	jnz .itoa_hex_loop
 
 	mov ecx, num_buf + 10
 	sub ecx, edi
