@@ -24,7 +24,9 @@ main:
 	mov edi, s2
 	mov ecx, len2
 	cld
+	; repeat equal
 	repe cmpsb
+	; jump ecx z
 	jecxz equal
 
 not_equal:
